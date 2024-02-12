@@ -1,40 +1,21 @@
 const jwt = require('jsonwebtoken');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'seusecretdetoken';
+const JWT_SECRET = process.env.JWT_SECRET || 'secretJWT';
 
-const config = {
-  expiresIn: '1h',
-  algorithm: 'HS256',
+const JWT_CONFIG = { 
+  algorithm: 'HS256', 
+  expiresIn: '1h', 
 };
 
 const createToken = (payload) => { 
-  try {
-    return jwt.sign(payload, JWT_SECRET, config);
-  } catch (error) {
-    return Error('token não encontrado');
-  }
+  const token = jwt.sign(payload, JWT_SECRET, JWT_CONFIG);
+ return token;
 };
-
-const validadorDeToken = (req, res, next) => {
-  const bearerToken = req.header('Authorization');
-
-  if (!bearerToken) {
-    return res.status(401).json({
-      message: 'Token not found',
-    });
-  }
-
-  try {
-    const token = bearerToken.split(' ')[1];
-    const payload = jwt.verify(token, createToken, config);
-    req.user = payload.id; 
-
-    next();
-  } catch (err) {
-    return res.status(401).json({ 
-      message: 'Expired or invalid token',
-    });
-  }
+/// Para fazer a verificação do token precisamos chamar o método JWT.verify, passando como primeiro parâmetro o 
+/// token e como segundo parâmetro o segredo utilizado para gerar o token.
+const validadorDeToken = (token) => {
+  const payload = jwt.verify(token, JWT_SECRET);
+  return payload;
 };
 module.exports = {
   createToken,
